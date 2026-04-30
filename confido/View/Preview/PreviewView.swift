@@ -18,9 +18,7 @@ struct PreviewView: View {
     @State private var isCameraOn: Bool = false
     
     @State private var currentIndex: Int = 0
-    
-    @State private var createdHistory: History?
-    
+        
     let meetingData: [[String: String]] = [
         [
             "topic": "Graphic Design",

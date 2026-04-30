@@ -40,9 +40,9 @@ struct VideoCallView: View {
                     
                 }
                 
-                NavigationLink(destination: GameView(), isActive: $returnHome) {
-                    EmptyView()
-                }
+//                NavigationLink(destination: GameView(), isActive: $returnHome) {
+//                    EmptyView()
+//                }
                 
                 ZStack(alignment: .bottomTrailing) {
                     Image((isCameraOn) ? "user" : "")
@@ -97,6 +97,9 @@ struct VideoCallView: View {
                 }
                 
                 
+            }
+            .navigationDestination(isPresented: $returnHome) {
+                GameView()
             }
             .navigationBarBackButtonHidden(true)
             .toolbar {

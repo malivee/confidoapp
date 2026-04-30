@@ -9,13 +9,8 @@ import SwiftUI
 
 struct GameView: View {
     
-    @State private var joystickOffset: CGSize = .zero
-    @State private var avatarOffset: CGSize = .zero
-    let movementMultiplier: CGFloat = 2.0
-    
-    let leftChairPosition = CGSize(width: 0, height: -100)
-    
     @State private var goToPreviewView: Bool = false
+    @State private var viewModel = GameViewModel()
     
     var body: some View {
         NavigationStack {
@@ -27,10 +22,7 @@ struct GameView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .padding(.top, -100)
-                    
-                    NavigationLink(destination: PreviewView(), isActive: $goToPreviewView) {
-                        EmptyView()
-                    }
+
                     
                     //joystick
                     ZStack {
@@ -41,26 +33,17 @@ struct GameView: View {
                         Circle()
                             .fill(.gray)
                             .frame(width: 50)
-                            .offset(joystickOffset)
+                            .offset(viewModel.joystickOffset)
                             .gesture(
                                 DragGesture()
                                     .onChanged { value in
                                         // d = /x^2 + y^2
-                                        let x = value.translation.width
-                                        let y = value.translation.height
-                                        let distance = sqrt(x * x + y * y)
-                                        if distance <= 50 {
-                                            joystickOffset = CGSize(width: x, height: y)
-                                            avatarOffset = CGSize(width: x * movementMultiplier, height: y * movementMultiplier)
-                                        }
-                                        checkAvatarOnChair {
-                                           goToPreviewView = true
-                                        }
-                                
+                                        viewModel.handleDragGesture(value: value)
+                                        
                                     }
                                     .onEnded { _ in
                                         withAnimation(.spring().speed(3.5)) {
-                                            joystickOffset = .zero
+                                            viewModel.endDragGesture()
                                         }
                                     }
                             )
@@ -74,20 +57,25 @@ struct GameView: View {
                             .scaledToFit()
                             .frame(width: 50)
                             .offset(x: 100, y: -100)
-//                            .padding(.top, -140)
-//                            .padding(.leading, 210)
+                        //                            .padding(.top, -140)
+                        //                            .padding(.leading, 210)
                         Image("leftChair")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 50)
-                            .offset(leftChairPosition)
+                            .offset(viewModel.leftChairPosition)
                         Image("tungGo")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 90)
                             .offset(x: 100, y: -130)
-//                            .padding(.top, -190)
-//                            .padding(.leading, 200)
+                        //                            .padding(.top, -190)
+                        //                            .padding(.leading, 200)
+                        //                        Image("desk")
+                        //                            .resizable()
+                        //                            .scaledToFit()
+                        //                            .frame(width: 100)
+                        //                            .offset(x: 55, y: -80)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
@@ -98,17 +86,17 @@ struct GameView: View {
                             .scaledToFit()
                             .frame(width: 35)
                             .offset(
-                                CGSize(
-                                    width: avatarOffset.width * movementMultiplier,
-                                    height: avatarOffset.height * movementMultiplier
-                                )
+                                viewModel.avatarOffset
                             )
                     }
-
+                    
                 }
                 
                 
                 
+            }
+            .navigationDestination(isPresented: $goToPreviewView) {
+                PreviewView()
             }
             .navigationBarBackButtonHidden()
             .toolbar {
@@ -122,7 +110,7 @@ struct GameView: View {
                             .background(.white.opacity(0.5))
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .shadow(radius: 12)
-
+                        
                         Text("Expert 1")
                             .foregroundStyle(.blue)
                             .font(.title3)
@@ -148,19 +136,31 @@ struct GameView: View {
                     }
                 })
             }
+            .alert(isPresented: $viewModel.isShowingalert) {
+                Alert(title: Text("Do you want to join this table?"),
+                      primaryButton: .default(Text("Continue")) {
+                    goToPreviewView = true
+                    
+                }
+                      ,
+                      
+                      secondaryButton: .cancel()
+                      
+                )
+            }
         }
     }
     
-    func checkAvatarOnChair(action: () -> Void) {
-        // d = / (x2 - x1)^2 + (y2 - y1)^2
-        let x = avatarOffset.width - leftChairPosition.width
-        let y = avatarOffset.height - leftChairPosition.height
-        
-        let distance = sqrt(x * x + y * y)
-        if distance < 40 {
-            action()
-        }
-    }
+//    func checkAvatarOnChair(action: () -> Void) {
+//        // d = / (x2 - x1)^2 + (y2 - y1)^2
+//        let x = avatarOffset.width - leftChairPosition.width
+//        let y = avatarOffset.height - leftChairPosition.height
+//        
+//        let distance = sqrt(x * x + y * y)
+//        if distance < 40 {
+//            action()
+//        }
+//    }
 }
 
 #Preview {

@@ -12,6 +12,7 @@ struct HistoryList: View {
     
     @Query(sort: \History.date) private var histories: [History]
     @Environment(\.modelContext) private var context
+    @State private var viewModel = HistoryViewModel()
 
     
     var body: some View {
@@ -47,26 +48,20 @@ struct HistoryList: View {
     
             }
             
-            .onDelete(perform: deleteList(index:))
+            .onDelete { indexSet in
+                viewModel.deleteList(context: context, index: indexSet, histories: histories)
+            }
      
             
         }
         
         .task {
-            for i in History.sampleData {
-                context.insert(i)
-                print(i.topic)
-                
-            
+            if histories.isEmpty {
+                viewModel.insertSampleData(context: context)
             }
+
         }
  
-    }
-    
-    func deleteList(index: IndexSet) {
-        for i in index {
-            context.delete(histories[i])
-        }
     }
 }
     
