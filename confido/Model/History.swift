@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class History: Identifiable {
+class History {
     var topic: String
     var date: Date
     var thumbnail: String

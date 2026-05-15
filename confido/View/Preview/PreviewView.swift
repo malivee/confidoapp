@@ -8,38 +8,43 @@
 import SwiftUI
 import SwiftData
 
+
 struct PreviewView: View {
     
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    
-    @State private var name: String = ""
-    @State private var isMuted: Bool = false
-    @State private var isCameraOn: Bool = false
-    
-    @State private var currentIndex: Int = 0
+//    @State private var name: String = ""
+//    @State private var isMuted: Bool = false
+//    @State private var isCameraOn: Bool = false
+//    
+//    @State private var currentIndex: Int = 0
         
-    let meetingData: [[String: String]] = [
-        [
-            "topic": "Graphic Design",
-            "detailedTopic": "You are presenting your design concept to a client in a meeting, explaining your visual decisions.",
-        ],
-        [
-            "topic": "Coding",
-            "detailedTopic": "You are explaining your implementation during a team meeting and discussing technical decisions.",
-        ],
-        [
-            "topic": "Data Science",
-            "detailedTopic": "You are presenting insights from your analysis to stakeholders and answering their questions.",
-        ]
-    ]
+//    let meetingData: [MeetingData]= [
+//        [
+//            "topic": "Graphic Design",
+//            "detailedTopic": "You are presenting your design concept to a client in a meeting, explaining your visual decisions.",
+//        ],
+//        [
+//            "topic": "Coding",
+//            "detailedTopic": "You are explaining your implementation during a team meeting and discussing technical decisions.",
+//        ],
+//        [
+//            "topic": "Data Science",
+//            "detailedTopic": "You are presenting insights from your analysis to stakeholders and answering their questions.",
+//        ]
+//    ]
+    
+    @State private var previewViewModel = PreviewViewModel()
+    
+   
+    
         
     
     var body: some View {
         NavigationStack {
             VStack {
                 
-                Image((isCameraOn) ? "user" : "")
+                Image((previewViewModel.isCameraOn) ? "user" : "")
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity)
@@ -49,27 +54,27 @@ struct PreviewView: View {
                     .shadow(radius: 20)
                 
                 HStack {
-                    Button("Camera Button", systemImage: (isCameraOn) ? "video.fill" : "video.slash.fill") {
-                        isCameraOn = !isCameraOn
+                    Button("Camera Button", systemImage: (previewViewModel.isCameraOn) ? "video.fill" : "video.slash.fill") {
+                        previewViewModel.isCameraOn = !previewViewModel.isCameraOn
                     }
                     .foregroundStyle(.white)
                     .padding(16)
-                    .background((isCameraOn) ? .blue : .red)
+                    .background((previewViewModel.isCameraOn) ? .blue : .red)
                     .clipShape(Circle())
                     .labelStyle(.iconOnly)
                     
-                    Button("Mic Button", systemImage: (isMuted) ? "microphone.fill" : "microphone.slash.fill") {
-                        isMuted = !isMuted
+                    Button("Mic Button", systemImage: (previewViewModel.isMuted) ? "microphone.fill" : "microphone.slash.fill") {
+                        previewViewModel.isMuted = !previewViewModel.isMuted
                         
                     }
                         .foregroundStyle(.white)
                         .padding(16)
-                        .background((isMuted) ? .blue: .red)
+                        .background((previewViewModel.isMuted) ? .blue: .red)
                         .clipShape(Circle())
                         .labelStyle(.iconOnly)
                 }
                 
-                TextField("Enter your name", text: $name)
+                TextField("Enter your name", text: $previewViewModel.name)
                     .padding()
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -78,12 +83,13 @@ struct PreviewView: View {
                 
                 HStack {
                     Button("Back Arrow", systemImage: "arrowshape.backward.fill") {
-                        if currentIndex > 0 {
-                            currentIndex -= 1
-                        }
+//                        if currentIndex > 0 {
+//                            currentIndex -= 1
+//                        }
+                        previewViewModel.previous()
                     }
-                    .disabled(currentIndex == 0)
-                    .foregroundStyle((currentIndex == 0) ? .gray : .black)
+                    .disabled(previewViewModel.currentIndex == 0)
+                    .foregroundStyle((previewViewModel.currentIndex == 0) ? .gray : .black)
                     .padding(16)
                     .background(.white)
                     .clipShape(Circle())
@@ -92,10 +98,10 @@ struct PreviewView: View {
                     
                     
                     VStack {
-                        Text(meetingData[currentIndex]["topic"] ?? "")
+                        Text(previewViewModel.meetingData[previewViewModel.currentIndex].title)
                             .font(.headline)
                             .multilineTextAlignment(.center)
-                        Text(meetingData[currentIndex]["detailedTopic"] ?? "")
+                        Text(previewViewModel.meetingData[previewViewModel.currentIndex].detailedTopic)
                             .font(.headline)
                             .fontWeight(.regular)
                             .multilineTextAlignment(.center)
@@ -107,12 +113,13 @@ struct PreviewView: View {
                     
                     
                     Button("Forward Arrow", systemImage: "arrowshape.forward.fill") {
-                        if currentIndex < meetingData.count - 1 {
-                            currentIndex += 1
-                        }
+//                        if currentIndex < meetingData.count - 1 {
+//                            currentIndex += 1
+//                        }
+                        previewViewModel.next()
                     }
-                    .disabled(currentIndex == 2)
-                    .foregroundStyle((currentIndex == 2) ? .gray : .black)
+                    .disabled(previewViewModel.currentIndex == 2)
+                    .foregroundStyle((previewViewModel.currentIndex == 2) ? .gray : .black)
                     .padding(16)
                     .background(.white)
                     .clipShape(Circle())
@@ -131,6 +138,7 @@ struct PreviewView: View {
             .navigationTitle("Meeting")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden()
+        
             .toolbar {
                 
                 ToolbarItem(placement: .cancellationAction) {
@@ -145,18 +153,18 @@ struct PreviewView: View {
                 
                 ToolbarItem(placement: .confirmationAction) {
                     NavigationLink {
-                        VideoCallView(name: name, topic: meetingData[currentIndex]["topic"] ?? "", detailedTopic: meetingData[currentIndex]["detailedTopic"] ?? "", isCameraOn: $isCameraOn, isMuted: $isMuted)
+                        VideoCallView(name: previewViewModel.name, topic: previewViewModel.meetingData[previewViewModel.currentIndex].title, detailedTopic: previewViewModel.meetingData[previewViewModel.currentIndex].detailedTopic, isCameraOn: $previewViewModel.isCameraOn, isMuted: $previewViewModel.isMuted)
                         
                     } label: {
                         Text("Join")
                             .padding(.horizontal, 32)
                             .padding(.vertical, 8)
-                            .background(name.isEmpty ? .gray : .blue)
+                            .background(previewViewModel.name.isEmpty ? .gray : .blue)
                             .foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                     }
                 
-                    .disabled(name.isEmpty)
+                    .disabled(previewViewModel.name.isEmpty)
                     .padding(.horizontal, -6)
                 }
                 
